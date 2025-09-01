@@ -1,70 +1,44 @@
 #![allow(clippy::result_large_err)]
 
 use anchor_lang::prelude::*;
+pub mod error;
+pub mod instructions;
+pub mod state;
+
+use instructions::*;
+use state::*;
 
 declare_id!("JAVuBXeBZqXNtS73azhBDAoYaaAFfo4gWXoZe2e7Jf8H");
 
+pub mod admin {
+    use super::{pubkey, Pubkey};
+    #[cfg(feature = "devnet")]
+    pub const ID: Pubkey = pubkey!("DRayqG9RXYi8WHgWEmRQGrUWRWbhjYWYkCRJDd6JBBak");
+    #[cfg(not(feature = "devnet"))]
+    pub const ID: Pubkey = pubkey!("GThUX1Atko4tqhN2NaiTazWSeFWMuiUvfFnyJyUghFMJ");
+}
+
 #[program]
 pub mod temple {
+
     use super::*;
 
-    pub fn close(_ctx: Context<CloseTemple>) -> Result<()> {
-        Ok(())
+    /// 创建寺庙配置
+    pub fn create_temple_config(ctx: Context<CreateTempleConfig>, index: u16) -> Result<()> {
+        instructions::create_temple_config(ctx, index)
     }
 
-    pub fn decrement(ctx: Context<Update>) -> Result<()> {
-        ctx.accounts.temple.count = ctx.accounts.temple.count.checked_sub(1).unwrap();
-        Ok(())
+    /// 创建NFT mint
+    pub fn create_nft_mint(
+        ctx: Context<CreateNftMint>,
+        incese_id: u8,
+        config_id: u16,
+    ) -> Result<()> {
+        instructions::create_nft_mint(ctx, incese_id, config_id)
     }
 
-    pub fn increment(ctx: Context<Update>) -> Result<()> {
-        ctx.accounts.temple.count = ctx.accounts.temple.count.checked_add(1).unwrap();
-        Ok(())
+    /// 烧香
+    pub fn burn_incense(ctx: Context<BurnIncense>, params: BurnIncenseParams) -> Result<()> {
+        instructions::burn_incense::burn_incense(ctx, params)
     }
-
-    pub fn initialize(_ctx: Context<InitializeTemple>) -> Result<()> {
-        Ok(())
-    }
-
-    pub fn set(ctx: Context<Update>, value: u8) -> Result<()> {
-        ctx.accounts.temple.count = value.clone();
-        Ok(())
-    }
-}
-
-#[derive(Accounts)]
-pub struct InitializeTemple<'info> {
-    #[account(mut)]
-    pub payer: Signer<'info>,
-
-    #[account(
-  init,
-  space = 8 + Temple::INIT_SPACE,
-  payer = payer
-    )]
-    pub temple: Account<'info, Temple>,
-    pub system_program: Program<'info, System>,
-}
-#[derive(Accounts)]
-pub struct CloseTemple<'info> {
-    #[account(mut)]
-    pub payer: Signer<'info>,
-
-    #[account(
-  mut,
-  close = payer, // close account and return lamports to payer
-    )]
-    pub temple: Account<'info, Temple>,
-}
-
-#[derive(Accounts)]
-pub struct Update<'info> {
-    #[account(mut)]
-    pub temple: Account<'info, Temple>,
-}
-
-#[account]
-#[derive(InitSpace)]
-pub struct Temple {
-    count: u8,
 }
