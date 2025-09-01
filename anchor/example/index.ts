@@ -1,22 +1,22 @@
-import { useDefaultWallet, useVisitorWallet } from "./api/wallet";
-import { createProfile, getProfile } from "./api/profile";
-import { createTweet, getTweet } from "./api/tweet";
-import { createLike } from "./api/tweet";
-import { createTokenMintAccount, createTokenMint } from "./api/token";
-import { nftMint } from "./api/nft";
-import { stakeNFT, unstakeNFT } from "./api/stake";
+import { initializeTempleConfig } from "./api/create_temple_config";
+import { createAllNftMintAccounts } from "./api/create_nft_mint_accounts";
+import { burnIncense } from "./api/burn_incense";
 
 (async () => {
-    const defaultWallet = useDefaultWallet();
-    const visitorWallet = useVisitorWallet();
+    // 初始化寺庙配置
+    console.log("\n=== 初始化寺庙配置 =====");
 
-    // 初始化全局配置
+    const { templeConfigPda, treasury, templeConfig } = await initializeTempleConfig();
+
+    console.log("寺庙配置PDA:", templeConfigPda.toString());
+    console.log("国库地址:", treasury.toString());
 
     // 初始化每种香型的铸币账户
+    console.log("\n=======初始化每种香型的铸币账户======");
+    await createAllNftMintAccounts(templeConfigPda);
 
     // 用户烧香
+    console.log("\n=======用户烧香======");
+    await burnIncense(templeConfigPda, "1", 0, 1);
 
-
-
-
-})(); 
+})();

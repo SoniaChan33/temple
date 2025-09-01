@@ -5,108 +5,625 @@
  * IDL can be found at `target/idl/temple.json`.
  */
 export type Temple = {
-  address: 'JAVuBXeBZqXNtS73azhBDAoYaaAFfo4gWXoZe2e7Jf8H'
-  metadata: {
-    name: 'temple'
-    version: '0.1.0'
-    spec: '0.1.0'
-    description: 'Created with Anchor'
-  }
-  instructions: [
+  "address": "5iZVCAG6GAq3wdVL31Hy2eTybnUEYkgvnamqdQETAPUK",
+  "metadata": {
+    "name": "temple",
+    "version": "0.1.0",
+    "spec": "0.1.0",
+    "description": "Created with Anchor"
+  },
+  "instructions": [
     {
-      name: 'close'
-      discriminator: [98, 165, 201, 177, 108, 65, 206, 96]
-      accounts: [
+      "name": "burnIncense",
+      "docs": [
+        "烧香"
+      ],
+      "discriminator": [
+        192,
+        206,
+        18,
+        53,
+        21,
+        1,
+        239,
+        134
+      ],
+      "accounts": [
         {
-          name: 'payer'
-          writable: true
-          signer: true
+          "name": "authority",
+          "docs": [
+            "用户账号（付款方，签名者）"
+          ],
+          "writable": true,
+          "signer": true
         },
         {
-          name: 'temple'
-          writable: true
+          "name": "templeAuthority",
+          "writable": true
         },
+        {
+          "name": "templeTreasury",
+          "writable": true
+        },
+        {
+          "name": "templeConfig",
+          "docs": [
+            "寺庙配置"
+          ],
+          "pda": {
+            "seeds": [
+              {
+                "kind": "const",
+                "value": [
+                  116,
+                  101,
+                  109,
+                  112,
+                  108,
+                  101,
+                  95,
+                  118,
+                  49
+                ]
+              },
+              {
+                "kind": "arg",
+                "path": "configId"
+              }
+            ],
+            "program": {
+              "kind": "const",
+              "value": [
+                70,
+                20,
+                75,
+                2,
+                24,
+                100,
+                43,
+                134,
+                176,
+                224,
+                182,
+                187,
+                248,
+                244,
+                51,
+                10,
+                200,
+                140,
+                164,
+                70,
+                206,
+                60,
+                29,
+                183,
+                167,
+                243,
+                170,
+                147,
+                118,
+                108,
+                237,
+                48
+              ]
+            }
+          }
+        },
+        {
+          "name": "nftMintAccount",
+          "docs": [
+            "nft mint"
+          ],
+          "writable": true,
+          "pda": {
+            "seeds": [
+              {
+                "kind": "const",
+                "value": [
+                  73,
+                  110,
+                  99,
+                  101,
+                  110,
+                  115,
+                  101,
+                  78,
+                  70,
+                  84
+                ]
+              },
+              {
+                "kind": "account",
+                "path": "templeConfig"
+              },
+              {
+                "kind": "arg",
+                "path": "params.incense_id"
+              }
+            ]
+          }
+        },
+        {
+          "name": "nftAssociatedTokenAccount",
+          "docs": [
+            "用户的NFT关联账户"
+          ],
+          "writable": true,
+          "pda": {
+            "seeds": [
+              {
+                "kind": "account",
+                "path": "authority"
+              },
+              {
+                "kind": "const",
+                "value": [
+                  6,
+                  221,
+                  246,
+                  225,
+                  215,
+                  101,
+                  161,
+                  147,
+                  217,
+                  203,
+                  225,
+                  70,
+                  206,
+                  235,
+                  121,
+                  172,
+                  28,
+                  180,
+                  133,
+                  237,
+                  95,
+                  91,
+                  55,
+                  145,
+                  58,
+                  140,
+                  245,
+                  133,
+                  126,
+                  255,
+                  0,
+                  169
+                ]
+              },
+              {
+                "kind": "account",
+                "path": "nftMintAccount"
+              }
+            ],
+            "program": {
+              "kind": "const",
+              "value": [
+                140,
+                151,
+                37,
+                143,
+                78,
+                36,
+                137,
+                241,
+                187,
+                61,
+                16,
+                41,
+                20,
+                142,
+                13,
+                131,
+                11,
+                90,
+                19,
+                153,
+                218,
+                255,
+                16,
+                132,
+                4,
+                142,
+                123,
+                216,
+                219,
+                233,
+                248,
+                89
+              ]
+            }
+          }
+        },
+        {
+          "name": "metaAccount",
+          "writable": true,
+          "pda": {
+            "seeds": [
+              {
+                "kind": "const",
+                "value": [
+                  109,
+                  101,
+                  116,
+                  97,
+                  100,
+                  97,
+                  116,
+                  97
+                ]
+              },
+              {
+                "kind": "account",
+                "path": "tokenMetadataProgram"
+              },
+              {
+                "kind": "account",
+                "path": "nftMintAccount"
+              }
+            ],
+            "program": {
+              "kind": "account",
+              "path": "tokenMetadataProgram"
+            }
+          }
+        },
+        {
+          "name": "masterEditionAccount",
+          "writable": true,
+          "pda": {
+            "seeds": [
+              {
+                "kind": "const",
+                "value": [
+                  109,
+                  101,
+                  116,
+                  97,
+                  100,
+                  97,
+                  116,
+                  97
+                ]
+              },
+              {
+                "kind": "account",
+                "path": "tokenMetadataProgram"
+              },
+              {
+                "kind": "account",
+                "path": "nftMintAccount"
+              },
+              {
+                "kind": "const",
+                "value": [
+                  101,
+                  100,
+                  105,
+                  116,
+                  105,
+                  111,
+                  110
+                ]
+              }
+            ],
+            "program": {
+              "kind": "account",
+              "path": "tokenMetadataProgram"
+            }
+          }
+        },
+        {
+          "name": "tokenProgram",
+          "address": "TokenkegQfeZyiNwAJbNbGKPFXCWuBvf9Ss623VQ5DA"
+        },
+        {
+          "name": "systemProgram",
+          "address": "11111111111111111111111111111111"
+        },
+        {
+          "name": "tokenMetadataProgram",
+          "address": "metaqbxxUerdq28cj1RbAWkYQm3ybzjb6a8bt518x1s"
+        },
+        {
+          "name": "associatedTokenProgram",
+          "address": "ATokenGPvbdGVxr1b2hvZbsiqW5xWH25efTNsLJA8knL"
+        },
+        {
+          "name": "rent",
+          "address": "SysvarRent111111111111111111111111111111111"
+        }
+      ],
+      "args": [
+        {
+          "name": "configId",
+          "type": "u16"
+        },
+        {
+          "name": "params",
+          "type": {
+            "defined": {
+              "name": "burnIncenseParams"
+            }
+          }
+        }
       ]
-      args: []
     },
     {
-      name: 'decrement'
-      discriminator: [106, 227, 168, 59, 248, 27, 150, 101]
-      accounts: [
+      "name": "createNftMint",
+      "docs": [
+        "创建NFT mint"
+      ],
+      "discriminator": [
+        220,
+        240,
+        28,
+        248,
+        182,
+        238,
+        138,
+        21
+      ],
+      "accounts": [
         {
-          name: 'temple'
-          writable: true
+          "name": "authority",
+          "writable": true,
+          "signer": true
         },
+        {
+          "name": "nftMintAccount",
+          "docs": [
+            "nft mint"
+          ],
+          "writable": true
+        },
+        {
+          "name": "templeConfig",
+          "writable": true,
+          "pda": {
+            "seeds": [
+              {
+                "kind": "const",
+                "value": [
+                  116,
+                  101,
+                  109,
+                  112,
+                  108,
+                  101,
+                  95,
+                  118,
+                  49
+                ]
+              },
+              {
+                "kind": "arg",
+                "path": "configId"
+              }
+            ]
+          }
+        },
+        {
+          "name": "systemProgram",
+          "address": "11111111111111111111111111111111"
+        },
+        {
+          "name": "tokenProgram",
+          "address": "TokenkegQfeZyiNwAJbNbGKPFXCWuBvf9Ss623VQ5DA"
+        }
+      ],
+      "args": [
+        {
+          "name": "inceseId",
+          "type": "u8"
+        },
+        {
+          "name": "configId",
+          "type": "u16"
+        }
       ]
-      args: []
     },
     {
-      name: 'increment'
-      discriminator: [11, 18, 104, 9, 104, 174, 59, 33]
-      accounts: [
+      "name": "createTempleConfig",
+      "docs": [
+        "创建寺庙配置"
+      ],
+      "discriminator": [
+        227,
+        91,
+        153,
+        89,
+        83,
+        215,
+        178,
+        242
+      ],
+      "accounts": [
         {
-          name: 'temple'
-          writable: true
+          "name": "owner",
+          "writable": true,
+          "signer": true,
+          "address": "FcKkQZRxD5P6JwGv58vGRAcX3CkjbX8oqFiygz6ohceU"
         },
+        {
+          "name": "templeConfig",
+          "writable": true,
+          "pda": {
+            "seeds": [
+              {
+                "kind": "const",
+                "value": [
+                  116,
+                  101,
+                  109,
+                  112,
+                  108,
+                  101,
+                  95,
+                  118,
+                  49
+                ]
+              },
+              {
+                "kind": "arg",
+                "path": "index"
+              }
+            ]
+          }
+        },
+        {
+          "name": "systemProgram",
+          "address": "11111111111111111111111111111111"
+        }
+      ],
+      "args": [
+        {
+          "name": "index",
+          "type": "u16"
+        },
+        {
+          "name": "treasury",
+          "type": "pubkey"
+        },
+        {
+          "name": "incenseTypes",
+          "type": {
+            "vec": {
+              "defined": {
+                "name": "incenseType"
+              }
+            }
+          }
+        }
       ]
-      args: []
+    }
+  ],
+  "accounts": [
+    {
+      "name": "templeConfig",
+      "discriminator": [
+        27,
+        116,
+        7,
+        67,
+        209,
+        48,
+        108,
+        209
+      ]
+    }
+  ],
+  "errors": [
+    {
+      "code": 6000,
+      "name": "invalidOwner",
+      "msg": "Input account owner is not the program address"
     },
     {
-      name: 'initialize'
-      discriminator: [175, 175, 109, 31, 13, 152, 155, 237]
-      accounts: [
-        {
-          name: 'payer'
-          writable: true
-          signer: true
-        },
-        {
-          name: 'temple'
-          writable: true
-          signer: true
-        },
-        {
-          name: 'systemProgram'
-          address: '11111111111111111111111111111111'
-        },
-      ]
-      args: []
+      "code": 6001,
+      "name": "mathOverflow",
+      "msg": "Math overflow"
     },
     {
-      name: 'set'
-      discriminator: [198, 51, 53, 241, 116, 29, 126, 194]
-      accounts: [
-        {
-          name: 'temple'
-          writable: true
-        },
-      ]
-      args: [
-        {
-          name: 'value'
-          type: 'u8'
-        },
-      ]
+      "code": 6002,
+      "name": "invalidIncenseId",
+      "msg": "Invalid incense ID"
     },
-  ]
-  accounts: [
     {
-      name: 'temple'
-      discriminator: [255, 176, 4, 245, 188, 253, 124, 25]
+      "code": 6003,
+      "name": "insufficientSolBalance",
+      "msg": "Insufficient SOL balance to pay for incense"
     },
-  ]
-  types: [
     {
-      name: 'temple'
-      type: {
-        kind: 'struct'
-        fields: [
+      "code": 6004,
+      "name": "invalidTempleTreasury",
+      "msg": "Temple treasury account mismatch"
+    }
+  ],
+  "types": [
+    {
+      "name": "burnIncenseParams",
+      "type": {
+        "kind": "struct",
+        "fields": [
           {
-            name: 'count'
-            type: 'u8'
+            "name": "incenseId",
+            "type": "string"
           },
+          {
+            "name": "amount",
+            "type": "u64"
+          },
+          {
+            "name": "configId",
+            "type": "u16"
+          }
         ]
       }
     },
+    {
+      "name": "incenseType",
+      "type": {
+        "kind": "struct",
+        "fields": [
+          {
+            "name": "id",
+            "type": "u8"
+          },
+          {
+            "name": "name",
+            "type": "string"
+          },
+          {
+            "name": "priceLamports",
+            "type": "u64"
+          },
+          {
+            "name": "merit",
+            "type": "u32"
+          },
+          {
+            "name": "incensePoints",
+            "type": "u32"
+          },
+          {
+            "name": "isDonation",
+            "type": "bool"
+          }
+        ]
+      }
+    },
+    {
+      "name": "templeConfig",
+      "type": {
+        "kind": "struct",
+        "fields": [
+          {
+            "name": "index",
+            "type": "u16"
+          },
+          {
+            "name": "owner",
+            "type": "pubkey"
+          },
+          {
+            "name": "treasury",
+            "type": "pubkey"
+          },
+          {
+            "name": "incenseTypes",
+            "type": {
+              "vec": {
+                "defined": {
+                  "name": "incenseType"
+                }
+              }
+            }
+          }
+        ]
+      }
+    }
   ]
-}
+};

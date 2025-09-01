@@ -17,11 +17,10 @@ pub struct IncenseType {
 #[derive(InitSpace)]
 pub struct TempleConfig {
     pub index: u16,       // 配置索引
-    pub admin: Pubkey,    // 寺庙管理员地址
+    pub owner: Pubkey,    // 寺庙管理员地址
     pub treasury: Pubkey, // 寺庙国库地址
     #[max_len(32)]
     pub incense_types: Vec<IncenseType>, // 所有香型的列表
-    pub total_incense_count: u64, // 寺庙累计被烧的总香数
 }
 
 impl TempleConfig {

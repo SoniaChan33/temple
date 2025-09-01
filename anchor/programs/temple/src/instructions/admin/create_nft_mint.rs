@@ -33,7 +33,7 @@ pub struct CreateNftMint<'info> {
         mut,
         seeds = [
             TempleConfig::SEED_PREFIX.as_bytes(),
-            &config_id.to_be_bytes()
+            &config_id.to_string().as_bytes(),
         ],
         bump,
     )]

@@ -5,17 +5,21 @@ pub mod error;
 pub mod instructions;
 pub mod state;
 
+use crate::temple_config::IncenseType;
 use instructions::*;
 use state::*;
 
-declare_id!("JAVuBXeBZqXNtS73azhBDAoYaaAFfo4gWXoZe2e7Jf8H");
+declare_id!("5iZVCAG6GAq3wdVL31Hy2eTybnUEYkgvnamqdQETAPUK");
 
+// todo 这个设置的用途是？
 pub mod admin {
     use super::{pubkey, Pubkey};
     #[cfg(feature = "devnet")]
     pub const ID: Pubkey = pubkey!("DRayqG9RXYi8WHgWEmRQGrUWRWbhjYWYkCRJDd6JBBak");
-    #[cfg(not(feature = "devnet"))]
-    pub const ID: Pubkey = pubkey!("GThUX1Atko4tqhN2NaiTazWSeFWMuiUvfFnyJyUghFMJ");
+    #[cfg(feature = "localnet")]
+    pub const ID: Pubkey = pubkey!("FcKkQZRxD5P6JwGv58vGRAcX3CkjbX8oqFiygz6ohceU");
+    #[cfg(not(any(feature = "devnet", feature = "localnet")))]
+    pub const ID: Pubkey = pubkey!("FcKkQZRxD5P6JwGv58vGRAcX3CkjbX8oqFiygz6ohceU");
 }
 
 #[program]
@@ -24,8 +28,13 @@ pub mod temple {
     use super::*;
 
     /// 创建寺庙配置
-    pub fn create_temple_config(ctx: Context<CreateTempleConfig>, index: u16) -> Result<()> {
-        instructions::create_temple_config(ctx, index)
+    pub fn create_temple_config(
+        ctx: Context<CreateTempleConfig>,
+        index: u16,
+        treasury: Pubkey,
+        incense_types: Vec<IncenseType>,
+    ) -> Result<()> {
+        instructions::create_temple_config(ctx, index, treasury, incense_types)
     }
 
     /// 创建NFT mint
@@ -38,7 +47,11 @@ pub mod temple {
     }
 
     /// 烧香
-    pub fn burn_incense(ctx: Context<BurnIncense>, params: BurnIncenseParams) -> Result<()> {
-        instructions::burn_incense::burn_incense(ctx, params)
+    pub fn burn_incense(
+        ctx: Context<BurnIncense>,
+        config_id: u16,
+        params: BurnIncenseParams,
+    ) -> Result<()> {
+        instructions::burn_incense::burn_incense(ctx, config_id, params)
     }
 }

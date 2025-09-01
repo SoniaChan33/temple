@@ -16,7 +16,7 @@ use anchor_spl::token::Mint;
 use anchor_spl::token::MintTo;
 use anchor_spl::token::Token;
 use anchor_spl::token::TokenAccount;
-pub fn burn_incense(ctx: Context<BurnIncense>, params: BurnIncenseParams) -> Result<()> {
+pub fn burn_incense(ctx: Context<BurnIncense>, config_id: u16, params: BurnIncenseParams) -> Result<()> {
     // 解析香型ID
     let incense_id = params
         .incense_id
@@ -141,21 +141,18 @@ pub fn burn_incense(ctx: Context<BurnIncense>, params: BurnIncenseParams) -> Res
 }
 
 #[derive(Accounts)]
-#[instruction(params: BurnIncenseParams)]
+#[instruction(config_id: u16, params: BurnIncenseParams)]
 pub struct BurnIncense<'info> {
     /// 用户账号（付款方，签名者）
     #[account(mut)]
     pub authority: Signer<'info>,
 
-    /// 寺庙管理员账号
-    #[account(
-        seeds = [TempleConfig::SEED_PREFIX.as_bytes(), temple_config.key().as_ref()],
-        bump,
-        seeds::program = crate::ID,
-    )]
+    /// CHECK: 寺庙管理员账号
+    #[account(mut,
+        constraint = temple_authority.key() == temple_config.owner @ ErrorCode::InvalidOwner)]
     pub temple_authority: AccountInfo<'info>,
 
-    /// 寺庙
+    /// CHECK: 寺庙存储sol的帐号
     #[account(
         mut,
         constraint = temple_treasury.key() == temple_config.treasury @ ErrorCode::InvalidTempleTreasury
@@ -164,7 +161,7 @@ pub struct BurnIncense<'info> {
 
     /// 寺庙配置
     #[account(
-        seeds = [TempleConfig::SEED_PREFIX.as_bytes()],
+        seeds = [TempleConfig::SEED_PREFIX.as_bytes(), &config_id.to_be_bytes()],
         bump,
         seeds::program = crate::ID,
     )]
@@ -173,13 +170,13 @@ pub struct BurnIncense<'info> {
     /// nft mint
     #[account(
         mut,
-        seeds = [TempleConfig::SEED_PREFIX.as_bytes() , &params.incense_id.as_bytes()],
+        seeds = [IncenseNFT::SEED_PREFIX.as_bytes(), temple_config.key().as_ref(), params.incense_id.as_bytes()],
         bump,
         mint::decimals = IncenseNFT::TOKEN_DECIMALS,
         mint::authority = nft_mint_account.key(),
         mint::freeze_authority = temple_authority.key(), // 寺庙拥有冻结权限
     )]
-    pub nft_mint_account: Account<'info, Mint>,
+    pub nft_mint_account: Box<Account<'info, Mint>>,
 
     /// 用户的NFT关联账户
     #[account(
@@ -229,4 +226,5 @@ pub struct BurnIncense<'info> {
 pub struct BurnIncenseParams {
     pub incense_id: String, // 香型ID
     pub amount: u64,        // 燃烧数量
+    pub config_id: u16,
 }

@@ -1,0 +1,9 @@
+/Users/tinachan/temple/anchor/target/sbpf-solana-solana/release/deps/libspl_associated_token_account_client-013e5028807c0400.rmeta: /Users/tinachan/.cargo/registry/src/index.crates.io-6f17d22bba15001f/spl-associated-token-account-client-2.0.0/src/lib.rs /Users/tinachan/.cargo/registry/src/index.crates.io-6f17d22bba15001f/spl-associated-token-account-client-2.0.0/src/address.rs /Users/tinachan/.cargo/registry/src/index.crates.io-6f17d22bba15001f/spl-associated-token-account-client-2.0.0/src/instruction.rs
+
+/Users/tinachan/temple/anchor/target/sbpf-solana-solana/release/deps/libspl_associated_token_account_client-013e5028807c0400.rlib: /Users/tinachan/.cargo/registry/src/index.crates.io-6f17d22bba15001f/spl-associated-token-account-client-2.0.0/src/lib.rs /Users/tinachan/.cargo/registry/src/index.crates.io-6f17d22bba15001f/spl-associated-token-account-client-2.0.0/src/address.rs /Users/tinachan/.cargo/registry/src/index.crates.io-6f17d22bba15001f/spl-associated-token-account-client-2.0.0/src/instruction.rs
+
+/Users/tinachan/temple/anchor/target/sbpf-solana-solana/release/deps/spl_associated_token_account_client-013e5028807c0400.d: /Users/tinachan/.cargo/registry/src/index.crates.io-6f17d22bba15001f/spl-associated-token-account-client-2.0.0/src/lib.rs /Users/tinachan/.cargo/registry/src/index.crates.io-6f17d22bba15001f/spl-associated-token-account-client-2.0.0/src/address.rs /Users/tinachan/.cargo/registry/src/index.crates.io-6f17d22bba15001f/spl-associated-token-account-client-2.0.0/src/instruction.rs
+
+/Users/tinachan/.cargo/registry/src/index.crates.io-6f17d22bba15001f/spl-associated-token-account-client-2.0.0/src/lib.rs:
+/Users/tinachan/.cargo/registry/src/index.crates.io-6f17d22bba15001f/spl-associated-token-account-client-2.0.0/src/address.rs:
+/Users/tinachan/.cargo/registry/src/index.crates.io-6f17d22bba15001f/spl-associated-token-account-client-2.0.0/src/instruction.rs:
