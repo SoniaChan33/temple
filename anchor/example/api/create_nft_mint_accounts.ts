@@ -13,7 +13,7 @@ export function getNftMintAccount(templeConfigPda: PublicKey, incenseId: number)
 }
 
 /**
- * 为所有香型初始化NFT Mint账户
+ * 为所有香型chuangNFT Mint账户
  */
 export async function createAllNftMintAccounts(templeConfigPda: PublicKey) {
     const adminWallet = useDefaultWallet();

@@ -13,4 +13,6 @@ pub enum ErrorCode {
     InsufficientSolBalance,
     #[msg("Temple treasury account mismatch")]
     InvalidTempleTreasury,
+    #[msg("Daily incense limit exceeded")]
+    DailyIncenseLimitExceeded,
 }

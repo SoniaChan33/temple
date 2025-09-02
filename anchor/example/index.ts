@@ -17,6 +17,6 @@ import { burnIncense } from "./api/burn_incense";
 
     // 用户烧香
     console.log("\n=======用户烧香======");
-    await burnIncense(templeConfigPda, "1", 0, 1);
+    await burnIncense(templeConfigPda, 0, 0, 1);
 
 })();

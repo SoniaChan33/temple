@@ -26,7 +26,6 @@ pub struct CreateTempleConfig<'info> {
     pub system_program: Program<'info, System>,
 }
 
-//TODO 初始化寺庙配置
 pub fn create_temple_config(
     ctx: Context<CreateTempleConfig>,
     index: u16,

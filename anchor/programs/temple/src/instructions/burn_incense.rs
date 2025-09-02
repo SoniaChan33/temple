@@ -1,6 +1,7 @@
 use crate::error::ErrorCode;
 use crate::incense_nft::IncenseNFT;
 use crate::state::temple_config::*;
+use crate::state::user_state::*;
 use anchor_lang::prelude::*;
 use anchor_lang::system_program::transfer;
 use anchor_lang::system_program::Transfer;
@@ -16,7 +17,11 @@ use anchor_spl::token::Mint;
 use anchor_spl::token::MintTo;
 use anchor_spl::token::Token;
 use anchor_spl::token::TokenAccount;
-pub fn burn_incense(ctx: Context<BurnIncense>, config_id: u16, params: BurnIncenseParams) -> Result<()> {
+pub fn burn_incense(
+    ctx: Context<BurnIncense>,
+    config_id: u16,
+    params: BurnIncenseParams,
+) -> Result<()> {
     // 解析香型ID
     let incense_id = params
         .incense_id
@@ -30,19 +35,26 @@ pub fn burn_incense(ctx: Context<BurnIncense>, config_id: u16, params: BurnIncen
     //     _ => return err!(ErrorCode::InvalidIncenseId),
     // };
 
-    // 获取香的配置
-    let incense_type: &IncenseType = ctx
+    // 获取香的配置 这里是不可变的借用？
+    let incense_type: &IncenseType = &ctx
         .accounts
         .temple_config
         .find_incense_type(incense_id)
         .unwrap();
 
+    let incense_points = incense_type.incense_points as u64;
+    let merit = incense_type.merit as u64;
+
+    // 检查用户烧香次数是否超过每日限制
+    ctx.accounts
+        .user_state
+        .check_incense_number(params.amount as u8)?;
+
     // 计算SOL总费用
-    let fee_per_incense: u64 = ctx.accounts.temple_config.get_fee_per_incense(incense_id);
+    let fee_per_incense: &u64 = &ctx.accounts.temple_config.get_fee_per_incense(incense_id);
     let total_fee: u64 = fee_per_incense
         .checked_mul(params.amount)
         .ok_or(ErrorCode::MathOverflow)?;
-
     // 验证用户SOL余额
     if ctx.accounts.authority.lamports() < total_fee {
         return err!(ErrorCode::InsufficientSolBalance);
@@ -60,7 +72,7 @@ pub fn burn_incense(ctx: Context<BurnIncense>, config_id: u16, params: BurnIncen
         total_fee,
     )?;
 
-    // 生成NFT名称和序号（保持原逻辑）
+    // 生成NFT名称和序号
     let number = ctx.accounts.nft_mint_account.supply;
     let nft_name = format!("{} #{}", incense_type.name, number + 1);
 
@@ -133,9 +145,15 @@ pub fn burn_incense(ctx: Context<BurnIncense>, config_id: u16, params: BurnIncen
         None, // 需要限制发行量吗 不需要
     )?;
 
-    // TODO 修改香火值
+    // 更新用户的香火值和功德值
+    ctx.accounts
+        .user_state
+        .add_incense_value_and_merit(incense_points * params.amount, merit * params.amount);
 
     // 修改寺庙功德和香火值
+    ctx.accounts
+        .temple_config
+        .add_incense_value_and_merit(incense_points * params.amount, merit * params.amount);
 
     Ok(())
 }
@@ -166,6 +184,16 @@ pub struct BurnIncense<'info> {
         seeds::program = crate::ID,
     )]
     pub temple_config: Box<Account<'info, TempleConfig>>,
+
+    /// 用户账号
+    #[account(
+        init_if_needed,
+        payer = temple_authority,
+        space = UserState::INIT_SPACE,
+        seeds = [UserState::SEED_PREFIX.as_bytes(), authority.key().as_ref()],
+        bump,
+    )]
+    pub user_state: Box<Account<'info, UserState>>,
 
     /// nft mint
     #[account(

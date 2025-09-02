@@ -8,7 +8,7 @@ pub struct IncenseType {
     pub name: String, // 名称
     pub price_lamports: u64, // 单支香的价格
     pub merit: u32, // 功德值
-    pub incense_points: u32, // 香火值
+    pub incense_points: u64, // 香火值
     pub is_donation: bool, // 是否捐助的香
 }
 
@@ -21,6 +21,9 @@ pub struct TempleConfig {
     pub treasury: Pubkey, // 寺庙国库地址
     #[max_len(32)]
     pub incense_types: Vec<IncenseType>, // 所有香型的列表
+    pub incense_points: u64, // 香火值
+    pub merit: u64,       // 功德
+    pub level: u8,        // 寺庙等级
 }
 
 impl TempleConfig {
@@ -35,5 +38,14 @@ impl TempleConfig {
         self.find_incense_type(incense_id)
             .map(|t: &IncenseType| t.price_lamports)
             .unwrap_or(0)
+    }
+
+    // 增加
+    pub fn add_incense_value_and_merit(&mut self, incense_value: u64, merit: u64) {
+        self.incense_points = self
+            .incense_points
+            .checked_add(incense_value)
+            .unwrap_or(self.incense_points);
+        self.merit = self.merit.checked_add(merit).unwrap_or(self.merit);
     }
 }

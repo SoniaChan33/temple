@@ -6,11 +6,11 @@ import { program } from "./const";
 /**
  * 获取NFT Mint账户地址
  */
-export function getNftMintAccount(id: string) {
+export function getNftMintAccount(id: number) {
     const [mintAccount] = anchor.web3.PublicKey.findProgramAddressSync([
         Buffer.from("IncenseNFT"),
         Buffer.from("temple_v1"), // TempleConfig种子前缀
-        Buffer.from(id) // 香型ID
+        Buffer.from(id.toString()) // 香型ID
     ], program.programId);
     return mintAccount;
 }
@@ -18,7 +18,7 @@ export function getNftMintAccount(id: string) {
 /**
  * 烧香测试函数
  */
-export async function burnIncense(templeConfigPda: PublicKey, incenseId: string, templeConfigIndex: number, amount: number) {
+export async function burnIncense(templeConfigPda: PublicKey, incenseId: number, templeConfigIndex: number, amount: number) {
     const userWallet = useVisitorWallet();
 
     // 计算NFT Mint账户PDA
