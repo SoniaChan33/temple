@@ -36,11 +36,11 @@ pub fn burn_incense(
     // };
 
     // 获取香的配置 这里是不可变的借用？
-    let incense_type: &IncenseType = &ctx
+    let incense_type = ctx
         .accounts
         .temple_config
         .find_incense_type(incense_id)
-        .unwrap();
+        .ok_or(ErrorCode::InvalidIncenseId)?;
 
     let incense_points = incense_type.incense_points as u64;
     let merit = incense_type.merit as u64;
@@ -48,12 +48,12 @@ pub fn burn_incense(
     // 检查用户烧香次数是否超过每日限制
     ctx.accounts
         .user_state
-        .check_incense_number(params.amount as u8)?;
+        .check_incense_number(params.amount)?;
 
     // 计算SOL总费用
     let fee_per_incense: &u64 = &ctx.accounts.temple_config.get_fee_per_incense(incense_id);
     let total_fee: u64 = fee_per_incense
-        .checked_mul(params.amount)
+        .checked_mul(params.amount as u64)
         .ok_or(ErrorCode::MathOverflow)?;
     // 验证用户SOL余额
     if ctx.accounts.authority.lamports() < total_fee {
@@ -76,9 +76,13 @@ pub fn burn_incense(
     let number = ctx.accounts.nft_mint_account.supply;
     let nft_name = format!("{} #{}", incense_type.name, number + 1);
 
+    // seeds = [IncenseNFT::SEED_PREFIX.as_bytes(), temple_config.key().as_ref(), params.incense_id.as_bytes()],
+    let temple_config_key: Pubkey = ctx.accounts.temple_config.key();
+
     let signer_seeds: &[&[&[u8]]] = &[&[
         IncenseNFT::SEED_PREFIX.as_bytes(),
-        &params.incense_id.as_bytes(),
+        temple_config_key.as_ref(),
+        params.incense_id.as_bytes(),
         &[ctx.bumps.nft_mint_account],
     ]];
 
@@ -122,7 +126,7 @@ pub fn burn_incense(
             },
             signer_seeds,
         ),
-        params.amount, // 按数量mint
+        params.amount as u64,
     )?;
 
     // 创建主版本
@@ -146,14 +150,16 @@ pub fn burn_incense(
     )?;
 
     // 更新用户的香火值和功德值
-    ctx.accounts
-        .user_state
-        .add_incense_value_and_merit(incense_points * params.amount, merit * params.amount);
+    ctx.accounts.user_state.add_incense_value_and_merit(
+        incense_points * params.amount as u64,
+        merit * params.amount as u64,
+    );
 
     // 修改寺庙功德和香火值
-    ctx.accounts
-        .temple_config
-        .add_incense_value_and_merit(incense_points * params.amount, merit * params.amount);
+    ctx.accounts.temple_config.add_incense_value_and_merit(
+        incense_points * params.amount as u64,
+        merit * params.amount as u64,
+    );
 
     Ok(())
 }
@@ -188,7 +194,7 @@ pub struct BurnIncense<'info> {
     /// 用户账号
     #[account(
         init_if_needed,
-        payer = temple_authority,
+        payer = authority, // TODO 用户的账号需要谁付钱？
         space = UserState::INIT_SPACE,
         seeds = [UserState::SEED_PREFIX.as_bytes(), authority.key().as_ref()],
         bump,
@@ -253,6 +259,6 @@ pub struct BurnIncense<'info> {
 #[derive(Clone, AnchorSerialize, AnchorDeserialize)]
 pub struct BurnIncenseParams {
     pub incense_id: String, // 香型ID
-    pub amount: u64,        // 燃烧数量
+    pub amount: u8,         // 燃烧数量
     pub config_id: u16,
 }
