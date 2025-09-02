@@ -7,7 +7,7 @@ pub struct IncenseType {
     #[max_len(32)]
     pub name: String, // 名称
     pub price_lamports: u64, // 单支香的价格
-    pub merit: u32, // 功德值
+    pub merit: u64, // 功德值
     pub incense_points: u64, // 香火值
     pub is_donation: bool, // 是否捐助的香
 }

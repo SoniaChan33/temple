@@ -41,9 +41,7 @@
         },
         {
           "name": "temple_config",
-          "docs": [
-            "寺庙配置"
-          ],
+          "writable": true,
           "pda": {
             "seeds": [
               {
@@ -64,50 +62,13 @@
                 "kind": "arg",
                 "path": "config_id"
               }
-            ],
-            "program": {
-              "kind": "const",
-              "value": [
-                70,
-                20,
-                75,
-                2,
-                24,
-                100,
-                43,
-                134,
-                176,
-                224,
-                182,
-                187,
-                248,
-                244,
-                51,
-                10,
-                200,
-                140,
-                164,
-                70,
-                206,
-                60,
-                29,
-                183,
-                167,
-                243,
-                170,
-                147,
-                118,
-                108,
-                237,
-                48
-              ]
-            }
+            ]
           }
         },
         {
-          "name": "nft_mint_account",
+          "name": "user_state",
           "docs": [
-            "nft mint"
+            "用户账号"
           ],
           "writable": true,
           "pda": {
@@ -115,28 +76,31 @@
               {
                 "kind": "const",
                 "value": [
-                  73,
-                  110,
-                  99,
-                  101,
-                  110,
+                  117,
                   115,
                   101,
-                  78,
-                  70,
-                  84
+                  114,
+                  95,
+                  115,
+                  116,
+                  97,
+                  116,
+                  101
                 ]
               },
               {
                 "kind": "account",
-                "path": "temple_config"
-              },
-              {
-                "kind": "arg",
-                "path": "params.incense_id"
+                "path": "authority"
               }
             ]
           }
+        },
+        {
+          "name": "nft_mint_account",
+          "docs": [
+            "nft mint"
+          ],
+          "writable": true
         },
         {
           "name": "nft_associated_token_account",
@@ -332,16 +296,16 @@
       ],
       "args": [
         {
+          "name": "incense_id",
+          "type": "u8"
+        },
+        {
           "name": "config_id",
           "type": "u16"
         },
         {
-          "name": "params",
-          "type": {
-            "defined": {
-              "name": "BurnIncenseParams"
-            }
-          }
+          "name": "amount",
+          "type": "u64"
         }
       ]
     },
@@ -507,6 +471,19 @@
         108,
         209
       ]
+    },
+    {
+      "name": "UserState",
+      "discriminator": [
+        72,
+        177,
+        85,
+        249,
+        76,
+        167,
+        186,
+        126
+      ]
     }
   ],
   "errors": [
@@ -534,29 +511,14 @@
       "code": 6004,
       "name": "InvalidTempleTreasury",
       "msg": "Temple treasury account mismatch"
+    },
+    {
+      "code": 6005,
+      "name": "DailyIncenseLimitExceeded",
+      "msg": "Daily incense limit exceeded"
     }
   ],
   "types": [
-    {
-      "name": "BurnIncenseParams",
-      "type": {
-        "kind": "struct",
-        "fields": [
-          {
-            "name": "incense_id",
-            "type": "string"
-          },
-          {
-            "name": "amount",
-            "type": "u64"
-          },
-          {
-            "name": "config_id",
-            "type": "u16"
-          }
-        ]
-      }
-    },
     {
       "name": "IncenseType",
       "type": {
@@ -576,11 +538,11 @@
           },
           {
             "name": "merit",
-            "type": "u32"
+            "type": "u64"
           },
           {
             "name": "incense_points",
-            "type": "u32"
+            "type": "u64"
           },
           {
             "name": "is_donation",
@@ -615,6 +577,46 @@
                 }
               }
             }
+          },
+          {
+            "name": "incense_points",
+            "type": "u64"
+          },
+          {
+            "name": "merit",
+            "type": "u64"
+          },
+          {
+            "name": "level",
+            "type": "u8"
+          }
+        ]
+      }
+    },
+    {
+      "name": "UserState",
+      "type": {
+        "kind": "struct",
+        "fields": [
+          {
+            "name": "user",
+            "type": "pubkey"
+          },
+          {
+            "name": "incense_points",
+            "type": "u64"
+          },
+          {
+            "name": "merit",
+            "type": "u64"
+          },
+          {
+            "name": "incense_number",
+            "type": "u8"
+          },
+          {
+            "name": "update_time",
+            "type": "i64"
           }
         ]
       }

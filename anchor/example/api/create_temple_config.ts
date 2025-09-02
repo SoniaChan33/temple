@@ -19,48 +19,48 @@ export async function initializeTempleConfig() {
             id: 0,
             name: "清香",
             priceLamports: new BN(0.01 * 1e9), // 0.01 SOL → 转换为lamports
-            merit: 10,
-            incensePoints: 100,
+            merit: new BN(10),
+            incensePoints: new BN(100),
             isDonation: false,
         },
         {
             id: 1,
             name: "檀香",
             priceLamports: new BN(0.05 * 1e9), // 0.05 SOL
-            merit: 65,
-            incensePoints: 600,
+            merit: new BN(65),
+            incensePoints: new BN(600),
             isDonation: false,
         },
         {
             id: 2,
             name: "龙涎香",
             priceLamports: new BN(0.1 * 1e9), // 0.1 SOL
-            merit: 1200,
-            incensePoints: 3100,
+            merit: new BN(1200),
+            incensePoints: new BN(3100),
             isDonation: false,
         },
         {
             id: 3,
             name: "太上灵香",
             priceLamports: new BN(0.3 * 1e9), // 0.3 SOL
-            merit: 3400,
-            incensePoints: 9000,
+            merit: new BN(3400),
+            incensePoints: new BN(9000),
             isDonation: false,
         },
         {
             id: 4,
             name: "秘制香",
             priceLamports: new BN(10 * 1e9), // 10 SOL（捐助型）
-            merit: 0,
-            incensePoints: 0,
+            merit: new BN(0),
+            incensePoints: new BN(0),
             isDonation: true, // 为捐助型
         },
         {
             id: 5,
             name: "天界香",
             priceLamports: new BN(50 * 1e9), // 50 SOL（捐助型）
-            merit: 0,
-            incensePoints: 0,
+            merit: new BN(0),
+            incensePoints: new BN(0),
             isDonation: true,
         }
     ];

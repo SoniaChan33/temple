@@ -47,9 +47,7 @@ export type Temple = {
         },
         {
           "name": "templeConfig",
-          "docs": [
-            "寺庙配置"
-          ],
+          "writable": true,
           "pda": {
             "seeds": [
               {
@@ -70,50 +68,13 @@ export type Temple = {
                 "kind": "arg",
                 "path": "configId"
               }
-            ],
-            "program": {
-              "kind": "const",
-              "value": [
-                70,
-                20,
-                75,
-                2,
-                24,
-                100,
-                43,
-                134,
-                176,
-                224,
-                182,
-                187,
-                248,
-                244,
-                51,
-                10,
-                200,
-                140,
-                164,
-                70,
-                206,
-                60,
-                29,
-                183,
-                167,
-                243,
-                170,
-                147,
-                118,
-                108,
-                237,
-                48
-              ]
-            }
+            ]
           }
         },
         {
-          "name": "nftMintAccount",
+          "name": "userState",
           "docs": [
-            "nft mint"
+            "用户账号"
           ],
           "writable": true,
           "pda": {
@@ -121,28 +82,31 @@ export type Temple = {
               {
                 "kind": "const",
                 "value": [
-                  73,
-                  110,
-                  99,
-                  101,
-                  110,
+                  117,
                   115,
                   101,
-                  78,
-                  70,
-                  84
+                  114,
+                  95,
+                  115,
+                  116,
+                  97,
+                  116,
+                  101
                 ]
               },
               {
                 "kind": "account",
-                "path": "templeConfig"
-              },
-              {
-                "kind": "arg",
-                "path": "params.incense_id"
+                "path": "authority"
               }
             ]
           }
+        },
+        {
+          "name": "nftMintAccount",
+          "docs": [
+            "nft mint"
+          ],
+          "writable": true
         },
         {
           "name": "nftAssociatedTokenAccount",
@@ -338,16 +302,16 @@ export type Temple = {
       ],
       "args": [
         {
+          "name": "incenseId",
+          "type": "u8"
+        },
+        {
           "name": "configId",
           "type": "u16"
         },
         {
-          "name": "params",
-          "type": {
-            "defined": {
-              "name": "burnIncenseParams"
-            }
-          }
+          "name": "amount",
+          "type": "u64"
         }
       ]
     },
@@ -513,6 +477,19 @@ export type Temple = {
         108,
         209
       ]
+    },
+    {
+      "name": "userState",
+      "discriminator": [
+        72,
+        177,
+        85,
+        249,
+        76,
+        167,
+        186,
+        126
+      ]
     }
   ],
   "errors": [
@@ -540,29 +517,14 @@ export type Temple = {
       "code": 6004,
       "name": "invalidTempleTreasury",
       "msg": "Temple treasury account mismatch"
+    },
+    {
+      "code": 6005,
+      "name": "dailyIncenseLimitExceeded",
+      "msg": "Daily incense limit exceeded"
     }
   ],
   "types": [
-    {
-      "name": "burnIncenseParams",
-      "type": {
-        "kind": "struct",
-        "fields": [
-          {
-            "name": "incenseId",
-            "type": "string"
-          },
-          {
-            "name": "amount",
-            "type": "u64"
-          },
-          {
-            "name": "configId",
-            "type": "u16"
-          }
-        ]
-      }
-    },
     {
       "name": "incenseType",
       "type": {
@@ -582,11 +544,11 @@ export type Temple = {
           },
           {
             "name": "merit",
-            "type": "u32"
+            "type": "u64"
           },
           {
             "name": "incensePoints",
-            "type": "u32"
+            "type": "u64"
           },
           {
             "name": "isDonation",
@@ -621,6 +583,46 @@ export type Temple = {
                 }
               }
             }
+          },
+          {
+            "name": "incensePoints",
+            "type": "u64"
+          },
+          {
+            "name": "merit",
+            "type": "u64"
+          },
+          {
+            "name": "level",
+            "type": "u8"
+          }
+        ]
+      }
+    },
+    {
+      "name": "userState",
+      "type": {
+        "kind": "struct",
+        "fields": [
+          {
+            "name": "user",
+            "type": "pubkey"
+          },
+          {
+            "name": "incensePoints",
+            "type": "u64"
+          },
+          {
+            "name": "merit",
+            "type": "u64"
+          },
+          {
+            "name": "incenseNumber",
+            "type": "u8"
+          },
+          {
+            "name": "updateTime",
+            "type": "i64"
           }
         ]
       }

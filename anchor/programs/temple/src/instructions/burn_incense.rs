@@ -3,6 +3,7 @@ use crate::incense_nft::IncenseNFT;
 use crate::state::temple_config::*;
 use crate::state::user_state::*;
 use anchor_lang::prelude::*;
+use anchor_lang::solana_program::log;
 use anchor_lang::system_program::transfer;
 use anchor_lang::system_program::Transfer;
 use anchor_spl::associated_token::AssociatedToken;
@@ -19,14 +20,10 @@ use anchor_spl::token::Token;
 use anchor_spl::token::TokenAccount;
 pub fn burn_incense(
     ctx: Context<BurnIncense>,
+    incense_id: u8,
     config_id: u16,
-    params: BurnIncenseParams,
+    amount: u64,
 ) -> Result<()> {
-    // 解析香型ID
-    let incense_id = params
-        .incense_id
-        .parse::<u8>()
-        .map_err(|_| ErrorCode::InvalidIncenseId)?;
     // let incense_name: &'static str = match incense_id {
     //     0 => "Fresh Incense",
     //     1 => "Sandalwood Incense",
@@ -46,14 +43,12 @@ pub fn burn_incense(
     let merit = incense_type.merit as u64;
 
     // 检查用户烧香次数是否超过每日限制
-    ctx.accounts
-        .user_state
-        .check_incense_number(params.amount)?;
+    ctx.accounts.user_state.check_incense_number(amount as u8)?;
 
     // 计算SOL总费用
     let fee_per_incense: &u64 = &ctx.accounts.temple_config.get_fee_per_incense(incense_id);
     let total_fee: u64 = fee_per_incense
-        .checked_mul(params.amount as u64)
+        .checked_mul(amount)
         .ok_or(ErrorCode::MathOverflow)?;
     // 验证用户SOL余额
     if ctx.accounts.authority.lamports() < total_fee {
@@ -71,6 +66,7 @@ pub fn burn_incense(
         ),
         total_fee,
     )?;
+    msg!("Transfer {} lamports to temple treasury", total_fee);
 
     // 生成NFT名称和序号
     let number = ctx.accounts.nft_mint_account.supply;
@@ -82,11 +78,12 @@ pub fn burn_incense(
     let signer_seeds: &[&[&[u8]]] = &[&[
         IncenseNFT::SEED_PREFIX.as_bytes(),
         temple_config_key.as_ref(),
-        params.incense_id.as_bytes(),
+        &[incense_id],
         &[ctx.bumps.nft_mint_account],
     ]];
 
     // 创建元数据
+    if ctx.accounts.nft_mint_account.supply == 0 {
     create_metadata_accounts_v3(
         CpiContext::new_with_signer(
             ctx.accounts.token_metadata_program.to_account_info(),
@@ -114,6 +111,7 @@ pub fn burn_incense(
         true,
         None,
     )?;
+}
 
     // Mint NFT给用户
     mint_to(
@@ -126,46 +124,48 @@ pub fn burn_incense(
             },
             signer_seeds,
         ),
-        params.amount as u64,
+        amount,
     )?;
+    msg!("create_nft_mint success");
+    msg!("authority: {}", ctx.accounts.authority.key());
 
-    // 创建主版本
-    create_master_edition_v3(
-        CpiContext::new_with_signer(
-            ctx.accounts.token_metadata_program.to_account_info(),
-            CreateMasterEditionV3 {
-                edition: ctx.accounts.master_edition_account.to_account_info(),
-                payer: ctx.accounts.authority.to_account_info(),
-                mint: ctx.accounts.nft_mint_account.to_account_info(),
-                metadata: ctx.accounts.meta_account.to_account_info(),
-                mint_authority: ctx.accounts.nft_mint_account.to_account_info(),
-                update_authority: ctx.accounts.temple_authority.to_account_info(), // 寺庙拥有更新权限
-                system_program: ctx.accounts.system_program.to_account_info(),
-                token_program: ctx.accounts.token_program.to_account_info(),
-                rent: ctx.accounts.rent.to_account_info(),
-            },
-            signer_seeds,
-        ),
-        None, // 需要限制发行量吗 不需要
-    )?;
+
+    // // 创建主版本
+    // create_master_edition_v3(
+    //     CpiContext::new_with_signer(
+    //         ctx.accounts.token_metadata_program.to_account_info(),
+    //         CreateMasterEditionV3 {
+    //             edition: ctx.accounts.master_edition_account.to_account_info(),
+    //             payer: ctx.accounts.authority.to_account_info(),
+    //             mint: ctx.accounts.nft_mint_account.to_account_info(),
+    //             metadata: ctx.accounts.meta_account.to_account_info(),
+    //             mint_authority: ctx.accounts.nft_mint_account.to_account_info(),
+    //             update_authority: ctx.accounts.nft_mint_account.to_account_info(),
+    //             system_program: ctx.accounts.system_program.to_account_info(),
+    //             token_program: ctx.accounts.token_program.to_account_info(),
+    //             rent: ctx.accounts.rent.to_account_info(),
+    //         },
+    //         signer_seeds,
+    //     ),
+    //     None, // 需要限制发行量吗 不需要
+    // )?;
+    msg!("Mint success");
 
     // 更新用户的香火值和功德值
-    ctx.accounts.user_state.add_incense_value_and_merit(
-        incense_points * params.amount as u64,
-        merit * params.amount as u64,
-    );
+    ctx.accounts
+        .user_state
+        .add_incense_value_and_merit(incense_points * amount, merit * amount);
 
     // 修改寺庙功德和香火值
-    ctx.accounts.temple_config.add_incense_value_and_merit(
-        incense_points * params.amount as u64,
-        merit * params.amount as u64,
-    );
+    ctx.accounts
+        .temple_config
+        .add_incense_value_and_merit(incense_points * amount, merit * amount);
 
     Ok(())
 }
 
 #[derive(Accounts)]
-#[instruction(config_id: u16, params: BurnIncenseParams)]
+#[instruction(incense_id: u8, config_id: u16)]
 pub struct BurnIncense<'info> {
     /// 用户账号（付款方，签名者）
     #[account(mut)]
@@ -183,11 +183,14 @@ pub struct BurnIncense<'info> {
     )]
     pub temple_treasury: AccountInfo<'info>,
 
-    /// 寺庙配置
+
     #[account(
-        seeds = [TempleConfig::SEED_PREFIX.as_bytes(), &config_id.to_be_bytes()],
+        mut,
+        seeds = [
+            TempleConfig::SEED_PREFIX.as_bytes(),
+            &config_id.to_string().as_bytes(),
+        ],
         bump,
-        seeds::program = crate::ID,
     )]
     pub temple_config: Box<Account<'info, TempleConfig>>,
 
@@ -195,7 +198,7 @@ pub struct BurnIncense<'info> {
     #[account(
         init_if_needed,
         payer = authority, // TODO 用户的账号需要谁付钱？
-        space = UserState::INIT_SPACE,
+        space = 100, 
         seeds = [UserState::SEED_PREFIX.as_bytes(), authority.key().as_ref()],
         bump,
     )]
@@ -204,7 +207,7 @@ pub struct BurnIncense<'info> {
     /// nft mint
     #[account(
         mut,
-        seeds = [IncenseNFT::SEED_PREFIX.as_bytes(), temple_config.key().as_ref(), params.incense_id.as_bytes()],
+        seeds = [IncenseNFT::SEED_PREFIX.as_bytes(), temple_config.key().as_ref(), &[incense_id]],
         bump,
         mint::decimals = IncenseNFT::TOKEN_DECIMALS,
         mint::authority = nft_mint_account.key(),
@@ -259,6 +262,6 @@ pub struct BurnIncense<'info> {
 #[derive(Clone, AnchorSerialize, AnchorDeserialize)]
 pub struct BurnIncenseParams {
     pub incense_id: String, // 香型ID
-    pub amount: u8,         // 燃烧数量
+    pub amount: u64,        // 燃烧数量
     pub config_id: u16,
 }

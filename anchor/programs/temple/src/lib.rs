@@ -49,9 +49,10 @@ pub mod temple {
     /// 烧香
     pub fn burn_incense(
         ctx: Context<BurnIncense>,
+        incense_id: u8,
         config_id: u16,
-        params: BurnIncenseParams,
+        amount: u64,
     ) -> Result<()> {
-        instructions::burn_incense::burn_incense(ctx, config_id, params)
+        instructions::burn_incense::burn_incense(ctx, incense_id, config_id, amount)
     }
 }
