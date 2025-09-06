@@ -6,8 +6,8 @@
  * @see https://github.com/codama-idl/codama
  */
 
-export * from './close';
-export * from './decrement';
-export * from './increment';
-export * from './initialize';
-export * from './set';
+export * from './burnIncense';
+export * from './buyIncense';
+export * from './createNftMint';
+export * from './createTempleConfig';
+export * from './initUser';

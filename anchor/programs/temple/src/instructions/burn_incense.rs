@@ -3,9 +3,6 @@ use crate::incense_nft::IncenseNFT;
 use crate::state::temple_config::*;
 use crate::state::user_state::*;
 use anchor_lang::prelude::*;
-use anchor_lang::solana_program::log;
-use anchor_lang::system_program::transfer;
-use anchor_lang::system_program::Transfer;
 use anchor_spl::associated_token::AssociatedToken;
 use anchor_spl::metadata::create_master_edition_v3;
 use anchor_spl::metadata::create_metadata_accounts_v3;
@@ -13,7 +10,9 @@ use anchor_spl::metadata::mpl_token_metadata::types::DataV2;
 use anchor_spl::metadata::CreateMasterEditionV3;
 use anchor_spl::metadata::CreateMetadataAccountsV3;
 use anchor_spl::metadata::Metadata;
+use anchor_spl::token::burn;
 use anchor_spl::token::mint_to;
+use anchor_spl::token::Burn;
 use anchor_spl::token::Mint;
 use anchor_spl::token::MintTo;
 use anchor_spl::token::Token;
@@ -24,15 +23,6 @@ pub fn burn_incense(
     config_id: u16,
     amount: u64,
 ) -> Result<()> {
-    // let incense_name: &'static str = match incense_id {
-    //     0 => "Fresh Incense",
-    //     1 => "Sandalwood Incense",
-    //     2 => "Ambergris Incense",
-    //     3 => "Supreme Spiritual Fragrance Incense",
-    //     _ => return err!(ErrorCode::InvalidIncenseId),
-    // };
-
-    // 获取香的配置 这里是不可变的借用？
     let incense_type = ctx
         .accounts
         .temple_config
@@ -43,30 +33,15 @@ pub fn burn_incense(
     let merit = incense_type.merit as u64;
 
     // 检查用户烧香次数是否超过每日限制
-    ctx.accounts.user_state.check_incense_number(amount as u8)?;
+    ctx.accounts.user_state.check_daily_incense_limit(incense_id, amount as u8)?;
 
-    // 计算SOL总费用
-    let fee_per_incense: &u64 = &ctx.accounts.temple_config.get_fee_per_incense(incense_id);
-    let total_fee: u64 = fee_per_incense
-        .checked_mul(amount)
-        .ok_or(ErrorCode::MathOverflow)?;
-    // 验证用户SOL余额
-    if ctx.accounts.authority.lamports() < total_fee {
-        return err!(ErrorCode::InsufficientSolBalance);
+    // 检查并扣减香余额（替代SOL支付）
+    let current_balance = ctx.accounts.user_state.get_incense_balance(incense_id);
+    if current_balance < amount {
+        return err!(ErrorCode::InsufficientIncenseBalance);
     }
-
-    // 转账
-    transfer(
-        CpiContext::new(
-            ctx.accounts.system_program.to_account_info(),
-            Transfer {
-                from: ctx.accounts.authority.to_account_info(),
-                to: ctx.accounts.temple_treasury.to_account_info(),
-            },
-        ),
-        total_fee,
-    )?;
-    msg!("Transfer {} lamports to temple treasury", total_fee);
+    ctx.accounts.user_state.subtract_incense_balance(incense_id, amount)?;
+    msg!("Consumed {} incense of type {} from user balance", amount, incense_id);
 
     // 生成NFT名称和序号
     let number = ctx.accounts.nft_mint_account.supply;
@@ -111,6 +86,26 @@ pub fn burn_incense(
         true,
         None,
     )?;
+
+    // 创建主版本
+    create_master_edition_v3(
+        CpiContext::new_with_signer(
+            ctx.accounts.token_metadata_program.to_account_info(),
+            CreateMasterEditionV3 {
+                edition: ctx.accounts.master_edition_account.to_account_info(),
+                payer: ctx.accounts.authority.to_account_info(),
+                mint: ctx.accounts.nft_mint_account.to_account_info(),
+                metadata: ctx.accounts.meta_account.to_account_info(),
+                mint_authority: ctx.accounts.nft_mint_account.to_account_info(),
+                update_authority: ctx.accounts.temple_authority.to_account_info(),
+                system_program: ctx.accounts.system_program.to_account_info(),
+                token_program: ctx.accounts.token_program.to_account_info(),
+                rent: ctx.accounts.rent.to_account_info(),
+            },
+            signer_seeds,
+        ),
+        None, // 需要限制发行量吗 不需要
+    )?;
 }
 
     // Mint NFT给用户
@@ -126,30 +121,24 @@ pub fn burn_incense(
         ),
         amount,
     )?;
-    msg!("create_nft_mint success");
-    msg!("authority: {}", ctx.accounts.authority.key());
+    msg!("NFT minted successfully");
 
+    // 立即销毁NFT（消耗品模式）
+    burn(
+        CpiContext::new(
+            ctx.accounts.token_program.to_account_info(),
+            Burn {
+                mint: ctx.accounts.nft_mint_account.to_account_info(),
+                from: ctx.accounts.nft_associated_token_account.to_account_info(),
+                authority: ctx.accounts.authority.to_account_info(),
+            },
+        ),
+        amount,
+    )?;
+    msg!("NFT burned successfully - consumable incense used");
 
-    // // 创建主版本
-    // create_master_edition_v3(
-    //     CpiContext::new_with_signer(
-    //         ctx.accounts.token_metadata_program.to_account_info(),
-    //         CreateMasterEditionV3 {
-    //             edition: ctx.accounts.master_edition_account.to_account_info(),
-    //             payer: ctx.accounts.authority.to_account_info(),
-    //             mint: ctx.accounts.nft_mint_account.to_account_info(),
-    //             metadata: ctx.accounts.meta_account.to_account_info(),
-    //             mint_authority: ctx.accounts.nft_mint_account.to_account_info(),
-    //             update_authority: ctx.accounts.nft_mint_account.to_account_info(),
-    //             system_program: ctx.accounts.system_program.to_account_info(),
-    //             token_program: ctx.accounts.token_program.to_account_info(),
-    //             rent: ctx.accounts.rent.to_account_info(),
-    //         },
-    //         signer_seeds,
-    //     ),
-    //     None, // 需要限制发行量吗 不需要
-    // )?;
-    msg!("Mint success");
+    // 更新每日烧香次数
+    ctx.accounts.user_state.update_daily_count(incense_id, amount as u8);
 
     // 更新用户的香火值和功德值
     ctx.accounts

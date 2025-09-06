@@ -15,4 +15,14 @@ pub enum ErrorCode {
     InvalidTempleTreasury,
     #[msg("Daily incense limit exceeded")]
     DailyIncenseLimitExceeded,
+    #[msg("Invalid Amount")]
+    InvalidAmount,
+    #[msg("Exceed daily incense limit")]
+    ExceedDailyIncenseLimit,
+    #[msg("Insufficient incense balance")]
+    InsufficientIncenseBalance,
+    #[msg("This incense type is only available through donations")]
+    DonationOnlyIncense,
+    #[msg("Failed to trigger special effect")]
+    SpecialEffectFailed,
 }

@@ -14,18 +14,19 @@ import {
   type ReadonlyUint8Array,
 } from 'gill';
 import {
-  type ParsedCloseInstruction,
-  type ParsedDecrementInstruction,
-  type ParsedIncrementInstruction,
-  type ParsedInitializeInstruction,
-  type ParsedSetInstruction,
+  type ParsedBurnIncenseInstruction,
+  type ParsedBuyIncenseInstruction,
+  type ParsedCreateNftMintInstruction,
+  type ParsedCreateTempleConfigInstruction,
+  type ParsedInitUserInstruction,
 } from '../instructions';
 
 export const TEMPLE_PROGRAM_ADDRESS =
-  'JAVuBXeBZqXNtS73azhBDAoYaaAFfo4gWXoZe2e7Jf8H' as Address<'JAVuBXeBZqXNtS73azhBDAoYaaAFfo4gWXoZe2e7Jf8H'>;
+  '5iZVCAG6GAq3wdVL31Hy2eTybnUEYkgvnamqdQETAPUK' as Address<'5iZVCAG6GAq3wdVL31Hy2eTybnUEYkgvnamqdQETAPUK'>;
 
 export enum TempleAccount {
-  Temple,
+  TempleConfig,
+  UserState,
 }
 
 export function identifyTempleAccount(
@@ -36,12 +37,23 @@ export function identifyTempleAccount(
     containsBytes(
       data,
       fixEncoderSize(getBytesEncoder(), 8).encode(
-        new Uint8Array([255, 176, 4, 245, 188, 253, 124, 25])
+        new Uint8Array([27, 116, 7, 67, 209, 48, 108, 209])
       ),
       0
     )
   ) {
-    return TempleAccount.Temple;
+    return TempleAccount.TempleConfig;
+  }
+  if (
+    containsBytes(
+      data,
+      fixEncoderSize(getBytesEncoder(), 8).encode(
+        new Uint8Array([72, 177, 85, 249, 76, 167, 186, 126])
+      ),
+      0
+    )
+  ) {
+    return TempleAccount.UserState;
   }
   throw new Error(
     'The provided account could not be identified as a temple account.'
@@ -49,11 +61,11 @@ export function identifyTempleAccount(
 }
 
 export enum TempleInstruction {
-  Close,
-  Decrement,
-  Increment,
-  Initialize,
-  Set,
+  BurnIncense,
+  BuyIncense,
+  CreateNftMint,
+  CreateTempleConfig,
+  InitUser,
 }
 
 export function identifyTempleInstruction(
@@ -64,56 +76,56 @@ export function identifyTempleInstruction(
     containsBytes(
       data,
       fixEncoderSize(getBytesEncoder(), 8).encode(
-        new Uint8Array([98, 165, 201, 177, 108, 65, 206, 96])
+        new Uint8Array([192, 206, 18, 53, 21, 1, 239, 134])
       ),
       0
     )
   ) {
-    return TempleInstruction.Close;
+    return TempleInstruction.BurnIncense;
   }
   if (
     containsBytes(
       data,
       fixEncoderSize(getBytesEncoder(), 8).encode(
-        new Uint8Array([106, 227, 168, 59, 248, 27, 150, 101])
+        new Uint8Array([158, 244, 18, 199, 55, 137, 6, 154])
       ),
       0
     )
   ) {
-    return TempleInstruction.Decrement;
+    return TempleInstruction.BuyIncense;
   }
   if (
     containsBytes(
       data,
       fixEncoderSize(getBytesEncoder(), 8).encode(
-        new Uint8Array([11, 18, 104, 9, 104, 174, 59, 33])
+        new Uint8Array([220, 240, 28, 248, 182, 238, 138, 21])
       ),
       0
     )
   ) {
-    return TempleInstruction.Increment;
+    return TempleInstruction.CreateNftMint;
   }
   if (
     containsBytes(
       data,
       fixEncoderSize(getBytesEncoder(), 8).encode(
-        new Uint8Array([175, 175, 109, 31, 13, 152, 155, 237])
+        new Uint8Array([227, 91, 153, 89, 83, 215, 178, 242])
       ),
       0
     )
   ) {
-    return TempleInstruction.Initialize;
+    return TempleInstruction.CreateTempleConfig;
   }
   if (
     containsBytes(
       data,
       fixEncoderSize(getBytesEncoder(), 8).encode(
-        new Uint8Array([198, 51, 53, 241, 116, 29, 126, 194])
+        new Uint8Array([14, 51, 68, 159, 237, 78, 158, 102])
       ),
       0
     )
   ) {
-    return TempleInstruction.Set;
+    return TempleInstruction.InitUser;
   }
   throw new Error(
     'The provided instruction could not be identified as a temple instruction.'
@@ -121,20 +133,20 @@ export function identifyTempleInstruction(
 }
 
 export type ParsedTempleInstruction<
-  TProgram extends string = 'JAVuBXeBZqXNtS73azhBDAoYaaAFfo4gWXoZe2e7Jf8H',
+  TProgram extends string = '5iZVCAG6GAq3wdVL31Hy2eTybnUEYkgvnamqdQETAPUK',
 > =
   | ({
-      instructionType: TempleInstruction.Close;
-    } & ParsedCloseInstruction<TProgram>)
+      instructionType: TempleInstruction.BurnIncense;
+    } & ParsedBurnIncenseInstruction<TProgram>)
   | ({
-      instructionType: TempleInstruction.Decrement;
-    } & ParsedDecrementInstruction<TProgram>)
+      instructionType: TempleInstruction.BuyIncense;
+    } & ParsedBuyIncenseInstruction<TProgram>)
   | ({
-      instructionType: TempleInstruction.Increment;
-    } & ParsedIncrementInstruction<TProgram>)
+      instructionType: TempleInstruction.CreateNftMint;
+    } & ParsedCreateNftMintInstruction<TProgram>)
   | ({
-      instructionType: TempleInstruction.Initialize;
-    } & ParsedInitializeInstruction<TProgram>)
+      instructionType: TempleInstruction.CreateTempleConfig;
+    } & ParsedCreateTempleConfigInstruction<TProgram>)
   | ({
-      instructionType: TempleInstruction.Set;
-    } & ParsedSetInstruction<TProgram>);
+      instructionType: TempleInstruction.InitUser;
+    } & ParsedInitUserInstruction<TProgram>);

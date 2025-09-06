@@ -15,7 +15,9 @@ import {
   getIncrementInstruction,
   getInitializeInstruction,
   getSetInstruction,
-} from '../src'
+  getInitUserInstruction,
+  fetchUserState,
+} from '../src/client/js'
 // @ts-ignore error TS2307 suggest setting `moduleResolution` but this is already configured
 import { loadKeypairSignerFromFile } from 'gill/node'
 
@@ -119,6 +121,22 @@ describe('temple', () => {
       }
       expect(e.message).toEqual(`Account not found at address: ${temple.address}`)
     }
+  })
+
+  it('Initialize User State', async () => {
+    // ARRANGE
+    expect.assertions(4)
+    const ix = await getInitUserInstruction({ user: payer })
+
+    // ACT
+    await sendAndConfirm({ ix, payer })
+
+    // ASSERT
+    const userState = await fetchUserState(rpc, ix.accounts[0].address)
+    expect(userState.data.user).toEqual(payer.address)
+    expect(userState.data.incensePoints).toEqual(0n)
+    expect(userState.data.merit).toEqual(0n)
+    expect(userState.data.incenseBalance).toEqual([])
   })
 })
 

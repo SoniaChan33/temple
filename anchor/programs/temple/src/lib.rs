@@ -46,6 +46,16 @@ pub mod temple {
         instructions::create_nft_mint(ctx, incese_id, config_id)
     }
 
+    // buy incense
+    pub fn buy_incense(
+        ctx: Context<BuyIncense>,
+        incense_id: u8,
+        config_id: u16,
+        amount: u64,
+    ) -> Result<()> {
+        instructions::buy_incense(ctx, incense_id, config_id, amount)
+    }
+
     /// 烧香
     pub fn burn_incense(
         ctx: Context<BurnIncense>,
@@ -54,5 +64,10 @@ pub mod temple {
         amount: u64,
     ) -> Result<()> {
         instructions::burn_incense::burn_incense(ctx, incense_id, config_id, amount)
+    }
+
+    /// 初始化用户状态
+    pub fn init_user(ctx: Context<InitUser>) -> Result<()> {
+        instructions::init_user(ctx)
     }
 }

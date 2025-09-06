@@ -6,4 +6,5 @@
  * @see https://github.com/codama-idl/codama
  */
 
-export * from './temple';
+export * from './templeConfig';
+export * from './userState';

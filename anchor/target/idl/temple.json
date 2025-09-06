@@ -310,6 +310,105 @@
       ]
     },
     {
+      "name": "buy_incense",
+      "discriminator": [
+        158,
+        244,
+        18,
+        199,
+        55,
+        137,
+        6,
+        154
+      ],
+      "accounts": [
+        {
+          "name": "authority",
+          "writable": true,
+          "signer": true
+        },
+        {
+          "name": "temple_treasury",
+          "writable": true
+        },
+        {
+          "name": "temple_config",
+          "writable": true,
+          "pda": {
+            "seeds": [
+              {
+                "kind": "const",
+                "value": [
+                  116,
+                  101,
+                  109,
+                  112,
+                  108,
+                  101,
+                  95,
+                  118,
+                  49
+                ]
+              },
+              {
+                "kind": "arg",
+                "path": "config_id"
+              }
+            ]
+          }
+        },
+        {
+          "name": "user_state",
+          "writable": true,
+          "pda": {
+            "seeds": [
+              {
+                "kind": "const",
+                "value": [
+                  117,
+                  115,
+                  101,
+                  114,
+                  95,
+                  115,
+                  116,
+                  97,
+                  116,
+                  101
+                ]
+              },
+              {
+                "kind": "account",
+                "path": "authority"
+              }
+            ]
+          }
+        },
+        {
+          "name": "system_program",
+          "address": "11111111111111111111111111111111"
+        },
+        {
+          "name": "rent",
+          "address": "SysvarRent111111111111111111111111111111111"
+        }
+      ],
+      "args": [
+        {
+          "name": "incense_id",
+          "type": "u8"
+        },
+        {
+          "name": "config_id",
+          "type": "u16"
+        },
+        {
+          "name": "amount",
+          "type": "u64"
+        }
+      ]
+    },
+    {
       "name": "create_nft_mint",
       "docs": [
         "创建NFT mint"
@@ -456,6 +555,61 @@
           }
         }
       ]
+    },
+    {
+      "name": "init_user",
+      "docs": [
+        "初始化用户状态"
+      ],
+      "discriminator": [
+        14,
+        51,
+        68,
+        159,
+        237,
+        78,
+        158,
+        102
+      ],
+      "accounts": [
+        {
+          "name": "user_state",
+          "writable": true,
+          "pda": {
+            "seeds": [
+              {
+                "kind": "const",
+                "value": [
+                  117,
+                  115,
+                  101,
+                  114,
+                  95,
+                  115,
+                  116,
+                  97,
+                  116,
+                  101
+                ]
+              },
+              {
+                "kind": "account",
+                "path": "user"
+              }
+            ]
+          }
+        },
+        {
+          "name": "user",
+          "writable": true,
+          "signer": true
+        },
+        {
+          "name": "system_program",
+          "address": "11111111111111111111111111111111"
+        }
+      ],
+      "args": []
     }
   ],
   "accounts": [
@@ -516,9 +670,66 @@
       "code": 6005,
       "name": "DailyIncenseLimitExceeded",
       "msg": "Daily incense limit exceeded"
+    },
+    {
+      "code": 6006,
+      "name": "InvalidAmount",
+      "msg": "Invalid Amount"
+    },
+    {
+      "code": 6007,
+      "name": "ExceedDailyIncenseLimit",
+      "msg": "Exceed daily incense limit"
+    },
+    {
+      "code": 6008,
+      "name": "InsufficientIncenseBalance",
+      "msg": "Insufficient incense balance"
+    },
+    {
+      "code": 6009,
+      "name": "DonationOnlyIncense",
+      "msg": "This incense type is only available through donations"
+    },
+    {
+      "code": 6010,
+      "name": "SpecialEffectFailed",
+      "msg": "Failed to trigger special effect"
     }
   ],
   "types": [
+    {
+      "name": "DailyIncenseCount",
+      "type": {
+        "kind": "struct",
+        "fields": [
+          {
+            "name": "incense_id",
+            "type": "u8"
+          },
+          {
+            "name": "count",
+            "type": "u8"
+          }
+        ]
+      }
+    },
+    {
+      "name": "IncenseBalance",
+      "type": {
+        "kind": "struct",
+        "fields": [
+          {
+            "name": "incense_id",
+            "type": "u8"
+          },
+          {
+            "name": "balance",
+            "type": "u64"
+          }
+        ]
+      }
+    },
     {
       "name": "IncenseType",
       "type": {
@@ -617,6 +828,30 @@
           {
             "name": "update_time",
             "type": "i64"
+          },
+          {
+            "name": "incense_balance",
+            "type": {
+              "vec": {
+                "defined": {
+                  "name": "IncenseBalance"
+                }
+              }
+            }
+          },
+          {
+            "name": "daily_incense_count",
+            "type": {
+              "vec": {
+                "defined": {
+                  "name": "DailyIncenseCount"
+                }
+              }
+            }
+          },
+          {
+            "name": "bump",
+            "type": "u8"
           }
         ]
       }

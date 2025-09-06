@@ -316,6 +316,105 @@ export type Temple = {
       ]
     },
     {
+      "name": "buyIncense",
+      "discriminator": [
+        158,
+        244,
+        18,
+        199,
+        55,
+        137,
+        6,
+        154
+      ],
+      "accounts": [
+        {
+          "name": "authority",
+          "writable": true,
+          "signer": true
+        },
+        {
+          "name": "templeTreasury",
+          "writable": true
+        },
+        {
+          "name": "templeConfig",
+          "writable": true,
+          "pda": {
+            "seeds": [
+              {
+                "kind": "const",
+                "value": [
+                  116,
+                  101,
+                  109,
+                  112,
+                  108,
+                  101,
+                  95,
+                  118,
+                  49
+                ]
+              },
+              {
+                "kind": "arg",
+                "path": "configId"
+              }
+            ]
+          }
+        },
+        {
+          "name": "userState",
+          "writable": true,
+          "pda": {
+            "seeds": [
+              {
+                "kind": "const",
+                "value": [
+                  117,
+                  115,
+                  101,
+                  114,
+                  95,
+                  115,
+                  116,
+                  97,
+                  116,
+                  101
+                ]
+              },
+              {
+                "kind": "account",
+                "path": "authority"
+              }
+            ]
+          }
+        },
+        {
+          "name": "systemProgram",
+          "address": "11111111111111111111111111111111"
+        },
+        {
+          "name": "rent",
+          "address": "SysvarRent111111111111111111111111111111111"
+        }
+      ],
+      "args": [
+        {
+          "name": "incenseId",
+          "type": "u8"
+        },
+        {
+          "name": "configId",
+          "type": "u16"
+        },
+        {
+          "name": "amount",
+          "type": "u64"
+        }
+      ]
+    },
+    {
       "name": "createNftMint",
       "docs": [
         "创建NFT mint"
@@ -462,6 +561,61 @@ export type Temple = {
           }
         }
       ]
+    },
+    {
+      "name": "initUser",
+      "docs": [
+        "初始化用户状态"
+      ],
+      "discriminator": [
+        14,
+        51,
+        68,
+        159,
+        237,
+        78,
+        158,
+        102
+      ],
+      "accounts": [
+        {
+          "name": "userState",
+          "writable": true,
+          "pda": {
+            "seeds": [
+              {
+                "kind": "const",
+                "value": [
+                  117,
+                  115,
+                  101,
+                  114,
+                  95,
+                  115,
+                  116,
+                  97,
+                  116,
+                  101
+                ]
+              },
+              {
+                "kind": "account",
+                "path": "user"
+              }
+            ]
+          }
+        },
+        {
+          "name": "user",
+          "writable": true,
+          "signer": true
+        },
+        {
+          "name": "systemProgram",
+          "address": "11111111111111111111111111111111"
+        }
+      ],
+      "args": []
     }
   ],
   "accounts": [
@@ -522,9 +676,66 @@ export type Temple = {
       "code": 6005,
       "name": "dailyIncenseLimitExceeded",
       "msg": "Daily incense limit exceeded"
+    },
+    {
+      "code": 6006,
+      "name": "invalidAmount",
+      "msg": "Invalid Amount"
+    },
+    {
+      "code": 6007,
+      "name": "exceedDailyIncenseLimit",
+      "msg": "Exceed daily incense limit"
+    },
+    {
+      "code": 6008,
+      "name": "insufficientIncenseBalance",
+      "msg": "Insufficient incense balance"
+    },
+    {
+      "code": 6009,
+      "name": "donationOnlyIncense",
+      "msg": "This incense type is only available through donations"
+    },
+    {
+      "code": 6010,
+      "name": "specialEffectFailed",
+      "msg": "Failed to trigger special effect"
     }
   ],
   "types": [
+    {
+      "name": "dailyIncenseCount",
+      "type": {
+        "kind": "struct",
+        "fields": [
+          {
+            "name": "incenseId",
+            "type": "u8"
+          },
+          {
+            "name": "count",
+            "type": "u8"
+          }
+        ]
+      }
+    },
+    {
+      "name": "incenseBalance",
+      "type": {
+        "kind": "struct",
+        "fields": [
+          {
+            "name": "incenseId",
+            "type": "u8"
+          },
+          {
+            "name": "balance",
+            "type": "u64"
+          }
+        ]
+      }
+    },
     {
       "name": "incenseType",
       "type": {
@@ -623,6 +834,30 @@ export type Temple = {
           {
             "name": "updateTime",
             "type": "i64"
+          },
+          {
+            "name": "incenseBalance",
+            "type": {
+              "vec": {
+                "defined": {
+                  "name": "incenseBalance"
+                }
+              }
+            }
+          },
+          {
+            "name": "dailyIncenseCount",
+            "type": {
+              "vec": {
+                "defined": {
+                  "name": "dailyIncenseCount"
+                }
+              }
+            }
+          },
+          {
+            "name": "bump",
+            "type": "u8"
           }
         ]
       }
